@@ -1,7 +1,9 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+from random import randint
+
 MOV_INC = 20
-MOV_PER_SEC = 5
+MOV_PER_SEC = 10
 GAME_SPEED = 1000 // MOV_PER_SEC
 
 class Snake(tk.Canvas):
@@ -10,7 +12,7 @@ class Snake(tk.Canvas):
         super().__init__(width=600, height=620, background="black", highlightthickness=0)
 
         self.snake_positions = [(100,100), (80,100) ,( 60, 100)]
-        self.food_positions = (200, 100)
+        self.food_positions = self.set_new_foodposition()
         self.score = 0 
         self.direction = "Right"
         self.bind_all("<Key>", self.onkeyPress)
@@ -72,8 +74,9 @@ class Snake(tk.Canvas):
 
     def performActions(self):
         if self.checkCollision():
+            self.end_game()
             return 
-        
+        self.checkFoodCollision()
         self.movSnake()
         self.after(GAME_SPEED, self.performActions)
 
@@ -99,7 +102,41 @@ class Snake(tk.Canvas):
             self.direction= new_direction
 
         self.direction = new_direction
+    
+    def checkFoodCollision(self):
+        if self.snake_positions[0] == self.food_positions:
+            self.score +=1
+            self.snake_positions.append(self.snake_positions[-1])
 
+            if self.score %5==0:
+                global MOV_PER_SEC
+                MOV_PER_SEC +=1
+            self.create_image( self.snake_positions[-1], image =self.snake_body, tag="snake" )
+
+            self.food_positions = self.set_new_foodposition()
+            self.coords(self.find_withtag("food"), self.food_positions)
+             
+            score = self.find_withtag("score")
+            self.itemconfig(score, text=f"Score : {self.score}", tag="score")
+
+    def set_new_foodposition(self):
+        while True:
+            x_positon = randint(1,29) * MOV_INC
+            y_position = randint(1, 30) * MOV_INC
+            food_positions = (x_positon, y_position)
+
+            if food_positions not in self.snake_positions:
+                return food_positions
+    
+    def end_game(self):
+        self.delete(tk.ALL)
+        self.create_text(
+            self.winfo_width()/2,
+            self.winfo_height()/2,
+            text= f"GAME OVER!! You Scored {self.score}!",
+            fill="#fff",
+            font=("TkDefaultFont", 24)
+        )
 
 root = tk.Tk()
 root.title("Snake Game")
