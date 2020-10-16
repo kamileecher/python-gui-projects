@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 from random import randint
 
 MOV_INC = 20
-MOV_PER_SEC = 10
+MOV_PER_SEC = 15
 GAME_SPEED = 1000 // MOV_PER_SEC
 
 class Snake(tk.Canvas):
@@ -122,7 +122,7 @@ class Snake(tk.Canvas):
     def set_new_foodposition(self):
         while True:
             x_positon = randint(1,29) * MOV_INC
-            y_position = randint(1, 30) * MOV_INC
+            y_position = randint(3, 30) * MOV_INC
             food_positions = (x_positon, y_position)
 
             if food_positions not in self.snake_positions:
@@ -134,6 +134,13 @@ class Snake(tk.Canvas):
             self.winfo_width()/2,
             self.winfo_height()/2,
             text= f"GAME OVER!! You Scored {self.score}!",
+            fill="#fff",
+            font=("TkDefaultFont", 24)
+        )
+        self.create_text(
+            self.winfo_width()/1.5,
+            self.winfo_height()/1.5,
+            text= f"Never Give Up - Suraj",
             fill="#fff",
             font=("TkDefaultFont", 24)
         )
