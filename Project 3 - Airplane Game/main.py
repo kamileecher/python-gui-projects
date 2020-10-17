@@ -1,6 +1,7 @@
 import pygame
 import random
 from pygame.locals import(
+    RLEACCEL,
     K_UP,
     K_DOWN,
     K_LEFT,
@@ -9,14 +10,14 @@ from pygame.locals import(
     KEYDOWN,
     QUIT,
 )
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.surf = pygame.Surface((75,25))
-        self.surf.fill((255,255,255))
+        self.surf = pygame.image.load("images/airplane.png").convert()
+        self.surf.set_colorkey((255,255,255),RLEACCEL)
         self.rect = self.surf.get_rect()
     
     def update(self, pressed_key):
@@ -41,22 +42,40 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super(Enemy, self).__init__()
-        self.surf = pygame.Surface((20,10))
-        self.surf.fill((255,255,255))
+        self.surf = pygame.image.load("images/enemy.png").convert()
+        self.surf.set_colorkey((0,0,0), RLEACCEL)
         self.rect = self.surf.get_rect(
             center =(
                 random.randint(SCREEN_WIDTH+20, SCREEN_WIDTH+100),
                 random.randint(0,SCREEN_HEIGHT)
             )
         )
-        self.speed = float(random.randint(1,4)/2)
+        self.speed = float(random.randint(1,6)/2)
 
     def update(self):
         self.rect.move_ip(-self.speed,0)
         if self.rect.right <0:
             self.kill()
 
+class Cloud(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Cloud, self).__init__()
+        self.surf = pygame.image.load("images/cloud.png").convert()
+        self.surf.set_colorkey((255,255,255), RLEACCEL)
 
+        self.rect = self.surf.get_rect(
+            center = (
+                random.randint(SCREEN_WIDTH+20, SCREEN_WIDTH+100),
+                random.randint(0, SCREEN_HEIGHT),
+            )
+        )
+
+    def update(self):
+        self.rect.move_ip(-1,0)
+        if self.rect.right<0:
+            self.kill()
+
+pygame.mixer.init()
 
 
 pygame.init()
@@ -65,12 +84,20 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 ADDENEMY = pygame.USEREVENT+1
 pygame.time.set_timer(ADDENEMY, 250)
 
+ADDCLOUD = pygame.USEREVENT+2
+pygame.time.set_timer(ADDCLOUD, 1000)
+
 player = Player()
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
+clouds = pygame.sprite.Group()
+
 all_sprites.add(player)
 running = True
+
+pygame.mixer.music.load("images/game.ogg")
+pygame.mixer.music.play(loops=-1)
 
 while running:
     for event in pygame.event.get():
@@ -85,13 +112,20 @@ while running:
             new_enemy = Enemy()
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
+        
+        elif event.type == ADDCLOUD:
+            new_cloud = Cloud()
+            clouds.add(new_cloud)
+            all_sprites.add(new_cloud)
     
     pressed_key = pygame.key.get_pressed()
     player.update(pressed_key)
+
     enemies.update()
+    clouds.update() 
 
 
-    screen.fill((0,0,0))
+    screen.fill((135,206,250))
     surf = pygame.Surface((100,100))
     surf.fill((0,0,0))
 
@@ -103,5 +137,8 @@ while running:
         running = False
 
     pygame.display.flip()
+
+pygame.mixer.music.stop()
+pygame.mixer.quit()
 
 pygame.quit()
