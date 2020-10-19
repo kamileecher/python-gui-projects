@@ -1,2 +1,1 @@
-﻿# python-gui-projects
-new
+# python-gui-projects
